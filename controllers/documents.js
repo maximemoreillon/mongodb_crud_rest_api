@@ -2,7 +2,7 @@ const mongodb_config = require('../mongodb.js')
 
 exports.create_document = (req, res) => {
 
-  mongodb_config.mongo_client.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
 
     // Handle DB connection errors
     if (err) {
@@ -13,8 +13,9 @@ exports.create_document = (req, res) => {
 
     let new_document = req.body
 
+
     // Insert into the DB
-    db.db(mongomongodb_config.db_name_name)
+    db.db(mongodb_config.db_name)
     .collection(req.params.collection)
     .insertOne(new_document, (err, result) => {
 
@@ -28,10 +29,11 @@ exports.create_document = (req, res) => {
         return
       }
 
-      console.log(`[MongoDB] Document inserted in collection ${req.params.collection}`)
 
       // Respond to the client
-      res.send("OK")
+      res.send(result.ops[0])
+
+      console.log(`[MongoDB] Document ${result.ops[0]._id} inserted in collection ${req.params.collection}`)
 
     })
   })
@@ -40,7 +42,7 @@ exports.create_document = (req, res) => {
 
 exports.get_all_documents = (req, res) => {
 
-  mongodb_config.mongo_client.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
     // Handle DB connection errors
     if (err) {
       console.log(err)
@@ -53,7 +55,7 @@ exports.get_all_documents = (req, res) => {
     db.db(mongodb_config.db_name)
     .collection(req.params.collection)
     .find({})
-    .limit(limit)
+    //.limit(limit)
     .toArray( (err, result) => {
 
       // Close the connection to the DB
@@ -83,7 +85,7 @@ exports.get_document = (req, res) => {
 
   let query = undefined
   try {
-    query = { _id: ObjectID(document_id)}
+    query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
     console.log('Invalid ID')
@@ -91,7 +93,7 @@ exports.get_document = (req, res) => {
     return
   }
 
-  mongodb_config.mongo_client.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
     // Handle DB connection errors
     if (err) {
       console.log(err)
@@ -130,7 +132,7 @@ exports.delete_document = (req, res) => {
 
   let query = undefined
   try {
-    query = { _id: ObjectID(document_id)}
+    query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
     console.log('Invalid ID requested')
@@ -138,7 +140,7 @@ exports.delete_document = (req, res) => {
     return
   }
 
-  mongodb_config.mongo_client.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
     // Handle DB connection errors
     if (err) {
       console.log(err)
@@ -178,7 +180,7 @@ exports.update_document = (req, res) => {
 
   let query = undefined
   try {
-    query = { _id: ObjectID(document_id)}
+    query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
     console.log('Invalid ID requested')
@@ -190,7 +192,7 @@ exports.update_document = (req, res) => {
   let new_document_properties = {$set: req.body}
 
 
-  mongodb_config.mongo_client.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
     // Handle DB connection errors
     if (err) {
       console.log(err)
@@ -230,7 +232,7 @@ exports.replace_document = (req, res) => {
 
   let query = undefined
   try {
-    query = { _id: ObjectID(document_id)}
+    query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
     console.log('Invalid ID')
@@ -243,7 +245,7 @@ exports.replace_document = (req, res) => {
   let new_document_properties = req.body
 
 
-  mongodb_config.mongo_client.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
     // Handle DB connection errors
     if (err) {
       console.log(err)

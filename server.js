@@ -30,6 +30,7 @@ const collection_controller = require('./controllers/collections.js')
 
 app.route('/collections')
   .get(collection_controller.get_collections)
+  .post(collection_controller.create_collection)
 
 app.route('/collections/:collection')
   .delete(collection_controller.drop_collection)

@@ -4,7 +4,7 @@ const dotenv = require('dotenv')
 // Parse environment variables
 dotenv.config()
 
-exports.mongo_client = mongodb.client
+exports.MongoClient = mongodb.MongoClient
 exports.ObjectID = mongodb.ObjectID
 
 exports.url = process.env.MONGODB_URL || 'mongodb://mongodb:27017'

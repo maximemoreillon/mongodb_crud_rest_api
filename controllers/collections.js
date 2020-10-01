@@ -1,9 +1,47 @@
 const mongodb_config = require('../mongodb.js')
 
+exports.create_collection = (req, res) => {
+
+  let collection_name = req.body.collection_name
+    || req.body.name
+
+  if(!collection_name) {
+    console.log(`Missing collection name`)
+    res.status(400).send(`Missing collection name`)
+    return
+  }
+
+  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
+    // Handle DB connection errors
+    if (err) {
+      console.log(err)
+      res.status(500).send(err)
+      return
+    }
+
+    db.db(mongodb_config.db_name)
+    .createCollection(collection_name, (err, collections) => {
+      // Close the connection to the DB
+      db.close()
+
+      // Handle errors
+      if (err) {
+        console.log(err)
+        res.status(500).send(err)
+        return
+      }
+
+      res.send('OK')
+
+      console.log(`[Mongodb] Collection ${collection_name} created`)
+    })
+
+  })
+}
 
 exports.get_collections = (req, res) => {
 
-  mongodb_config.mongo_client.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
     // Handle DB connection errors
     if (err) {
       console.log(err)
@@ -26,7 +64,7 @@ exports.get_collections = (req, res) => {
 
       res.send(collections)
 
-      console.log(`Collection list queried`)
+      console.log(`[Mongodb] Collection list queried`)
     })
 
   })
@@ -34,7 +72,7 @@ exports.get_collections = (req, res) => {
 
 exports.drop_collection = (req, res) => {
 
-  mongodb_config.mongo_client.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
+  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
     // Handle DB connection errors
     if (err) {
       console.log(err)
@@ -56,7 +94,7 @@ exports.drop_collection = (req, res) => {
       }
 
       if (delOK) {
-        console.log(`Collection ${req.params.collection} dropped`)
+        console.log(`[Mongodb] Collection ${req.params.collection} dropped`)
         res.send(`Collection ${req.params.collection} dropped`)
       }
 
