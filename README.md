@@ -28,5 +28,5 @@ A simple RESTful API for a MongoDB Database
 ### Docker
 
 ```
-docker run -e MONGODB_URL=http://your-db-url 172.16.98.151:5000/mongodb-crud-rest-api
+docker run -e MONGODB_URL=http://your-db-url moreillon/mongodb-crud-rest-api
 ```
