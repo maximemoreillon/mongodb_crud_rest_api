@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
     version: pjson.version,
     author: pjson.author,
     mongodb_url: require('./mongodb.js').url,
-    mongodb_db: require('./mongodb.js').db_name,
+    mongodb_db_name: require('./mongodb.js').db_name,
   })
 })
 
