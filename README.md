@@ -22,6 +22,7 @@ A simple RESTful API for a MongoDB Database
 | --- | --- |
 | MONGODB_URL | The URL of the MongoDB database to be used by the service |
 | MONGODB_DB_NAME | OPTIONAL The name of the database to be used by the service |
+| APP_PORT | OPTIONAL The port used by Express to listen to |
 
 ## Deployment
 
