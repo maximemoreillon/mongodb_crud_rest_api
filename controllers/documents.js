@@ -2,85 +2,60 @@ const mongodb_config = require('../mongodb.js')
 
 exports.create_document = (req, res) => {
 
-  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options, (err, db) => {
+  const collection = req.params.collection
+  if(!collection) return res.status(400).send(`Collection not defined`)
 
-    // Handle DB connection errors
-    if (err) {
-      console.log(err)
-      res.status(500).send(err)
-      return
-    }
+  const new_document = req.body
 
-    let new_document = req.body
-
-
-    // Insert into the DB
-    db.db(mongodb_config.db_name)
-    .collection(req.params.collection)
-    .insertOne(new_document, (err, result) => {
-
-      // Close connection to DB
-      db.close()
-
-      // DB insertion error handling
-      if (err) {
-        console.log(err)
-        res.status(500).send(err)
-        return
-      }
-
-
-      // Respond to the client
-      res.send(result.ops[0])
-
-      console.log(`[MongoDB] Document ${result.ops[0]._id} inserted in collection ${req.params.collection}`)
-
-    })
+  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options)
+  .then(db => {
+    return db.db(mongodb_config.db_name)
+    .collection(collection)
+    .insertOne(new_document)
   })
-
+  .then(result => {
+    res.send(result.ops[0])
+    console.log(`[MongoDB] Document ${result.ops[0]._id} inserted in collection ${collection}`)
+  })
+  .catch(error => {
+    console.log(error)
+    res.status(500).send(error)
+  })
 }
 
 exports.get_all_documents = (req, res) => {
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
-    // Handle DB connection errors
-    if (err) {
-      console.log(err)
-      res.status(500).send(err)
-      return
-    }
+  const collection = req.params.collection
+  if(!collection) return res.status(400).send(`Collection not defined`)
 
-    let limit = req.query.limit || 0
-
-    db.db(mongodb_config.db_name)
-    .collection(req.params.collection)
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
+  .then(db => {
+    const limit = req.query.limit || 0
+    return db.db(mongodb_config.db_name)
+    .collection(collection)
     .find({})
-    //.limit(limit)
-    .toArray( (err, result) => {
-
-      // Close the connection to the DB
-      db.close()
-
-      // Handle errors
-      if (err) {
-        console.log(err)
-        res.status(500).send(err)
-        return
-      }
-
-      console.log(`[MongoDB] Documents of collection ${req.params.collection} queried`)
-
-      res.send(result)
-    })
+    .limit(Number(limit))
+    .toArray()
   })
+  .then(result => {
+    res.send(result)
+    console.log(`[MongoDB] Documents of collection ${collection} queried`)
+  })
+  .catch(error => {
+    console.log(error)
+    res.status(500).send(error)
+  })
+
 }
 
 
 
 exports.get_document = (req, res) => {
 
-  let document_id = req.params.document_id
+  const collection = req.params.collection
+  if(!collection) return res.status(400).send(`Collection not defined`)
 
+  const document_id = req.params.document_id
   if(!document_id) return res.status(400).send(`ID not specified`)
 
   let query = undefined
@@ -88,46 +63,32 @@ exports.get_document = (req, res) => {
     query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
-    console.log('Invalid ID')
-    res.status(400).send('Invalid ID')
-    return
+    return res.status(400).send('Invalid ID')
   }
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
-    // Handle DB connection errors
-    if (err) {
-      console.log(err)
-      res.status(500).send(err)
-      return
-    }
-
-    db.db(mongodb_config.db_name)
-    .collection(req.params.collection)
-    .findOne(query,(err, result) => {
-
-      // Close the connection to the DB
-      db.close()
-
-      // Handle DB errors
-      if (err) {
-        console.log(err)
-        res.status(500).send(err)
-        return
-      }
-
-      res.send(result)
-
-      console.log(`[MongoDB] Document ${document_id} of collection ${req.params.collection} queried`)
-    })
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
+  then(db => {
+    return db.db(mongodb_config.db_name)
+    .collection(collection)
+    .findOne(query)
   })
+  .then(result => {
+    res.send(result)
+    console.log(`[MongoDB] Document ${document_id} of collection ${collection} queried`)
+  })
+  .catch(error => {
+    console.log(error)
+    res.status(500).send(error)
+  })
+
 }
 
 exports.delete_document = (req, res) => {
 
-  // Delete a document
+  const collection = req.params.collection
+  if(!collection) return res.status(400).send(`Collection not defined`)
 
-  let document_id = req.params.document_id
-
+  const document_id = req.params.document_id
   if(!document_id) return res.status(400).send(`ID not specified`)
 
   let query = undefined
@@ -135,47 +96,34 @@ exports.delete_document = (req, res) => {
     query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
-    console.log('Invalid ID requested')
-    res.status(400).send('Invalid ID')
-    return
+    return res.status(400).send('Invalid ID')
   }
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
-    // Handle DB connection errors
-    if (err) {
-      console.log(err)
-      res.status(500).send(err)
-      return
-    }
-
-    db.db(mongodb_config.db_name)
-    .collection(req.params.collection)
-    .deleteOne(query,(err, result) => {
-
-      // Close the connection to the DB
-      db.close()
-
-      // Handle errors
-      if (err) {
-        console.log(err)
-        res.status(500).send(err)
-        return
-      }
-
-      res.send(result)
-
-      console.log(`[MongoDB]  Document ${document_id} of collection ${req.params.collection} deleted`)
-
-    })
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
+  .then(db => {
+    return db.db(mongodb_config.db_name)
+    .collection(collection)
+    .deleteOne(query)
   })
+  .then(result => {
+    res.send(result)
+    console.log(`[MongoDB]  Document ${document_id} of collection ${collection} deleted`)
+  })
+  .catch(error => {
+    console.log(error)
+    res.status(500).send(error)
+  })
+
 }
 
 exports.update_document = (req, res) => {
 
   // Patch a document
 
-  let document_id = req.params.document_id
+  const collection = req.params.collection
+  if(!collection) return res.status(400).send(`Collection not defined`)
 
+  const document_id = req.params.document_id
   if(!document_id) return res.status(400).send(`ID not specified`)
 
   let query = undefined
@@ -183,51 +131,37 @@ exports.update_document = (req, res) => {
     query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
-    console.log('Invalid ID requested')
-    res.status(400).send('Invalid ID')
-    return
+    return res.status(400).send('Invalid ID')
   }
 
   delete req.body._id
-  let new_document_properties = {$set: req.body}
+  const new_document_properties = {$set: req.body}
 
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
-    // Handle DB connection errors
-    if (err) {
-      console.log(err)
-      res.status(500).send(err)
-      return
-    }
-
-
-    db.db(mongodb_config.db_name)
-    .collection(req.params.collection)
-    .updateOne(query, new_document_properties, (err, result) => {
-
-      // Close the connection to the DB
-      db.close()
-
-      // Handle errors
-      if (err) {
-        console.log(err)
-        res.status(500).send(err)
-        return
-      }
-
-      res.send(result)
-
-      console.log(`[MongoDB] Document ${document_id} of collection ${req.params.collection} updated`)
-    })
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
+  .then(db => {
+    return db.db(mongodb_config.db_name)
+    .collection(collection)
+    .updateOne(query, new_document_properties)
   })
+  .then(result => {
+    res.send(result)
+    console.log(`[MongoDB] Document ${document_id} of collection ${collection} updated`)
+  })
+  .catch(error => {
+    console.log(error)
+    res.status(500).send(error)
+  })
+
 }
 
 exports.replace_document = (req, res) => {
 
   // Put a document
+  const collection = req.params.collection
+  if(!collection) return res.status(400).send(`Collection not defined`)
 
-  let document_id = req.params.document_id
-
+  const document_id = req.params.document_id
   if(!document_id) return res.status(400).send(`ID not specified`)
 
   let query = undefined
@@ -235,42 +169,25 @@ exports.replace_document = (req, res) => {
     query = { _id: mongodb_config.ObjectID(document_id)}
   }
   catch (e) {
-    console.log('Invalid ID')
-    res.status(400).send('Invalid ID')
-    return
+    return res.status(400).send('Invalid ID')
   }
 
   delete req.body._id
 
-  let new_document_properties = req.body
+  const new_document_properties = req.body
 
-
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options, (err, db) => {
-    // Handle DB connection errors
-    if (err) {
-      console.log(err)
-      res.status(500).send(err)
-      return
-    }
-
-
-    db.db(mongodb_config.db_name)
-    .collection(req.params.collection)
-    .replaceOne(query, new_document_properties, (err, result) => {
-
-      // Close the connection to the DB
-      db.close()
-
-      // Handle errors
-      if (err) {
-        console.log(err)
-        res.status(500).send(err)
-        return
-      }
-
-      res.send(result)
-
-      console.log(`[MongoDB] Document ${document_id} of collection ${req.params.collection} replaced`)
-    })
+  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
+  .then(db => {
+    return db.db(mongodb_config.db_name)
+    .collection(collection)
+    .replaceOne(query, new_document_properties)
+  })
+  .then(result => {
+    res.send(result)
+    console.log(`[MongoDB] Document ${document_id} of collection ${collection} replaced`)
+  })
+  .catch(error => {
+    console.log(error)
+    res.status(500).send(error)
   })
 }
