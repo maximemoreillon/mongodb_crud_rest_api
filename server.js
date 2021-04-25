@@ -38,7 +38,7 @@ app.route('/collections/:collection')
   .get(document_controller.get_all_documents)
   .post(document_controller.create_document)
 
-app.route('/collections/:collection/:document_id')
+app.route('/collections/:collection/documents/:document_id')
   .get(document_controller.get_document)
   .patch(document_controller.update_document)
   .put(document_controller.replace_document)
