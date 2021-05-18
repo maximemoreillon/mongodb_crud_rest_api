@@ -1,4 +1,4 @@
-const mongodb_config = require('../mongodb.js')
+const {get_db} = require('../db.js')
 
 exports.create_document = (req, res) => {
 
@@ -7,12 +7,9 @@ exports.create_document = (req, res) => {
 
   const new_document = req.body
 
-  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options)
-  .then(db => {
-    return db.db(mongodb_config.db_name)
-    .collection(collection)
-    .insertOne(new_document)
-  })
+  get_db()
+  .collection(collection)
+  .insertOne(new_document)
   .then(result => {
     res.send(result.ops[0])
     console.log(`[MongoDB] Document ${result.ops[0]._id} inserted in collection ${collection}`)
@@ -28,15 +25,12 @@ exports.get_all_documents = (req, res) => {
   const collection = req.params.collection
   if(!collection) return res.status(400).send(`Collection not defined`)
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
-  .then(db => {
-    const limit = req.query.limit || 0
-    return db.db(mongodb_config.db_name)
-    .collection(collection)
-    .find({})
-    .limit(Number(limit))
-    .toArray()
-  })
+  const limit = req.query.limit || 0
+  get_db()
+  .collection(collection)
+  .find({})
+  .limit(Number(limit))
+  .toArray()
   .then(result => {
     res.send(result)
     console.log(`[MongoDB] Documents of collection ${collection} queried`)
@@ -66,12 +60,9 @@ exports.get_document = (req, res) => {
     return res.status(400).send('Invalid ID')
   }
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
-  then(db => {
-    return db.db(mongodb_config.db_name)
-    .collection(collection)
-    .findOne(query)
-  })
+  get_db()
+  .collection(collection)
+  .findOne(query)
   .then(result => {
     res.send(result)
     console.log(`[MongoDB] Document ${document_id} of collection ${collection} queried`)
@@ -99,12 +90,9 @@ exports.delete_document = (req, res) => {
     return res.status(400).send('Invalid ID')
   }
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
-  .then(db => {
-    return db.db(mongodb_config.db_name)
-    .collection(collection)
-    .deleteOne(query)
-  })
+  get_db()
+  .collection(collection)
+  .deleteOne(query)
   .then(result => {
     res.send(result)
     console.log(`[MongoDB]  Document ${document_id} of collection ${collection} deleted`)
@@ -138,12 +126,10 @@ exports.update_document = (req, res) => {
   const new_document_properties = {$set: req.body}
 
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
-  .then(db => {
-    return db.db(mongodb_config.db_name)
-    .collection(collection)
-    .updateOne(query, new_document_properties)
-  })
+
+  get_db()
+  .collection(collection)
+  .updateOne(query, new_document_properties)
   .then(result => {
     res.send(result)
     console.log(`[MongoDB] Document ${document_id} of collection ${collection} updated`)
@@ -176,12 +162,9 @@ exports.replace_document = (req, res) => {
 
   const new_document_properties = req.body
 
-  mongodb_config.MongoClient.connect(mongodb_config.url,mongodb_config.options)
-  .then(db => {
-    return db.db(mongodb_config.db_name)
-    .collection(collection)
-    .replaceOne(query, new_document_properties)
-  })
+  get_db()
+  .collection(collection)
+  .replaceOne(query, new_document_properties)
   .then(result => {
     res.send(result)
     console.log(`[MongoDB] Document ${document_id} of collection ${collection} replaced`)

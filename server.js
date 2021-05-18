@@ -21,28 +21,13 @@ app.get('/', (req, res) => {
     application_name: pjson.name,
     version: pjson.version,
     author: pjson.author,
-    mongodb_url: require('./mongodb.js').url,
-    mongodb_db_name: require('./mongodb.js').db_name,
+    mongodb_url: require('./db.js').url,
+    mongodb_db_name: require('./db.js').name,
   })
 })
 
-const document_controller = require('./controllers/documents.js')
-const collection_controller = require('./controllers/collections.js')
 
-app.route('/collections')
-  .get(collection_controller.get_collections)
-  .post(collection_controller.create_collection)
-
-app.route('/collections/:collection')
-  .delete(collection_controller.drop_collection)
-  .get(document_controller.get_all_documents)
-  .post(document_controller.create_document)
-
-app.route('/collections/:collection/documents/:document_id')
-  .get(document_controller.get_document)
-  .patch(document_controller.update_document)
-  .put(document_controller.replace_document)
-  .delete(document_controller.delete_document)
+app.use('/collections', require('./routes/collections.js') )
 
 // Start the server
 app.listen(port, () => {

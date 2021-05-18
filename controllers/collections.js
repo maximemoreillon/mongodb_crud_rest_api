@@ -1,4 +1,4 @@
-const mongodb_config = require('../mongodb.js')
+const {get_db} = require('../db.js')
 
 exports.create_collection = (req, res) => {
 
@@ -29,14 +29,11 @@ exports.create_collection = (req, res) => {
 
 exports.get_collections = (req, res) => {
 
-  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options)
-  .then(db => {
-    return db.db(mongodb_config.db_name)
-    .listCollections()
-    .toArray()
-  })
+  get_db()
+  .listCollections()
+  .toArray()
   .then(collections => {
-    res.send(collections)
+    res.send(collections.map(collection => collection.name))
     console.log(`[Mongodb] Collection list queried`)
   })
   .catch(error => {
@@ -56,12 +53,9 @@ exports.drop_collection = (req, res) => {
     return
   }
 
-  mongodb_config.MongoClient.connect(mongodb_config.url, mongodb_config.options)
-  .then(db => {
-    return db.db(mongodb_config.db_name)
-    .collection()
-    .drop()
-  })
+  get_db()
+  .collection()
+  .drop()
   .then(() => {
     console.log(`[Mongodb] Collection ${collection} dropped`)
     res.send(`Collection ${rcollection} dropped`)
